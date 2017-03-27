@@ -1,7 +1,7 @@
-#define L1 0
-#define L2 0
-#define L3 0
-#define k_cl 60
+#define L1 0.5
+#define L2 4
+#define L3 4.5
+#define k_cl 30*0.02
 #define N 50
 
 class Path
@@ -14,9 +14,9 @@ class Path
 
 class ThreeLinks
 {
-    float px,py,pz;    // coordinate
     float J[3][3];     // Jacobian
 public:
+    float px,py,pz;    // coordinate
     float th1,th2,th3; // joint angle
     ThreeLinks(float,float,float);
     ~ThreeLinks();
