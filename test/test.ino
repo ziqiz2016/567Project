@@ -3,10 +3,10 @@
 #define pi 3.14
 #define r2d 180/pi  // radius to degree
 #define d2r pi/180
-#define r  1
+#define r  1        // radius of circle
+#define T  200      // t_Step 200ms
 
 
-Path circle;
 Servo servo1, servo2, servo3;
 float q1,q2,q3;
 
@@ -14,7 +14,6 @@ void setup() {
     // Opens serial port, sets data rate to 9600 bps
     Serial.begin(9600);
     initial_angle();        // initialize angle
-    initial_path(&circle);  // initialize the Path
     // attaches the servo on pin 9 to the servo object
     servo1.attach(9);       // #9 for q1
     servo2.attach(10);      // #10 for q2
@@ -23,7 +22,9 @@ void setup() {
 
 void loop() {
     int i;
+    float x,y;              // coordinate for start point
     char incomingData;      // for incoming serial data
+    Path path;
     ThreeLinks mylinks(q1,q2,q3);
     mylinks.Jacobian();
     //Serial.println((mylinks.th1)*r2d);
@@ -40,7 +41,8 @@ void loop() {
         Serial.println(incomingData);
         switch(incomingData)
         {
-            case 'c': draw_circle(&mylinks); break;
+            case 's': start_point(&mylinks,&x,&y); break;
+            case 'c': draw_circle(&mylinks,&path,x,y); break;
             default : Serial.println("nothing to draw."); break;
         }
         //Serial.print("\r"); //enter
@@ -59,14 +61,12 @@ void output(const ThreeLinks *mylinks)
 }
 
 // initialize path
-void initial_path(Path *path)
+void initial_circle(Path *path, float x0, float y0)
 {
-    float x0=2;
-    float y0=2;
     float z0=0.5;
     for(int i=0;i<N;++i)
     {
-        path->x[i]= x0 + r*cos(i*2*pi/N);
+        path->x[i]= (x0-r) + r*cos(i*2*pi/N);
         path->y[i]= y0 + r*sin(i*2*pi/N);
         Serial.print(path->x[i], DEC);
         Serial.print(" ");
@@ -94,15 +94,41 @@ void initial_angle()
   Serial.println("finished initializing angle.");
 }
 
-// draw circle
-void draw_circle(ThreeLinks *mylinks)
+// set start point
+void start_point(ThreeLinks *mylinks,float *x,float *y)
 {
+  Path point;
+  Serial.print("set x:");
+  while(!(Serial.available() > 0)){}
+  *x = Serial.parseFloat();
+  Serial.println(*x, DEC);
+  Serial.print("set y:");
+  while(!(Serial.available() > 0)){}
+  *y = Serial.parseFloat();
+  Serial.println(*y, DEC);
+  point.x[0]=*x;
+  point.y[0]=*y;
+  point.z=0;           // cal_point coordinate
+  //Serial.println("Calibration......");
+  for (int i = 0; i < 5; ++i)
+  {
+      mylinks->update(&point,0);
+      output(mylinks);
+      delay(T); // delay some time
+  }
+  //Serial.println("Finished Calibration......");
+}
+
+// draw circle
+void draw_circle(ThreeLinks *mylinks,Path *circle,float x,float y)
+{
+    initial_circle(circle,x,y);
     Serial.println("I'm drawing a circle......");
     for (int i = 0; i < N; ++i)
     {
-        mylinks->update(&circle,i);
+        mylinks->update(circle,i);
         output(mylinks);
-        delay(200); // delay some time
+        delay(T); // delay some time
     }
     Serial.println("circle draw completed.");
 }
