@@ -8,24 +8,39 @@ ThreeLinks::ThreeLinks(float angle_1, float angle_2, float angle_3)
     th1 = angle_1;
     th2 = angle_2;
     th3 = angle_3;
-    px = cos(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
-    py = sin(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
-    pz = L1 + L2*sin(th2) + L3*sin(th2 - th3);
+    //px = cos(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
+    //py = sin(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
+    pz = L1 - L2*sin(th2) - L3*sin(th2 - th3);
+    px = off1*cos(th1) - off2*sin(th1) + L2*cos(th1)*cos(th2) + L3*cos(th1)*cos(th2)*cos(th3) + L3*cos(th1)*sin(th2)*sin(th3);
+    py = off2*cos(th1) + off1*sin(th1) + L2*cos(th2)*sin(th1) + L3*cos(th2)*cos(th3)*sin(th1) + L3*sin(th1)*sin(th2)*sin(th3);
 }
 
 ThreeLinks::~ThreeLinks(){/*nothing to destruct*/}
 
 void ThreeLinks::Jacobian()
 {
+  
     J[0][0] = -sin(th1)/(L2*cos(th2) + L3*cos(th2 - th3));
     J[0][1] = cos(th1)/(L2*cos(th2) + L3*cos(th2 - th3));
     J[0][2] = 0;
     J[1][0] = -(cos(th2 - th3)*cos(th1))/(L2*sin(th3));
     J[1][1] = -(cos(th2 - th3)*sin(th1))/(L2*sin(th3));
-    J[1][2] = -sin(th2 - th3)/(L2*sin(th3));
+    J[1][2] = sin(th2 - th3)/(L2*sin(th3));             // changed
     J[2][0] = -(cos(th1)*(L2*cos(th2) + L3*cos(th2 - th3)))/(L2*L3*sin(th3));
     J[2][1] = -(sin(th1)*(L2*cos(th2) + L3*cos(th2 - th3)))/(L2*L3*sin(th3));
-    J[2][2] = -(L2*sin(th2) + L3*sin(th2 - th3))/(L2*L3*sin(th3));
+    J[2][2] = (L2*sin(th2) + L3*sin(th2 - th3))/(L2*L3*sin(th3));     //changed
+  
+  /*
+    J[0][0] = -sin(th1)/(off1 + L2*cos(th2) + L3*cos(th2 - th3));
+    J[0][1] = cos(th1)/(off1 + L2*cos(th2) + L3*cos(th2 - th3));
+    J[0][2] = 0; 
+    J[1][0] = -(2*(L3*cos(th1) - L3*cos(th1)*cos(th2)^2 - L3*cos(th1)*cos(th3)^2 + off1*cos(th1)*cos(th2)*cos(th3) - off2*cos(th2)*cos(th3)*sin(th1) + off1*cos(th1)*sin(th2)*sin(th3) - off2*sin(th1)*sin(th2)*sin(th3) + L2*cos(th1)*cos(th2)^2*cos(th3) + 2*L3*cos(th1)*cos(th2)^2*cos(th3)^2 + L2*cos(th1)*cos(th2)*sin(th2)*sin(th3) + 2*L3*cos(th1)*cos(th2)*cos(th3)*sin(th2)*sin(th3)))/(2*L2*off1*sin(th3) + 2*L2^2*cos(th2)*sin(th3) + L2*L3*sin(th2) - L2*L3*cos(2*th3)*sin(th2) + L2*L3*sin(2*th3)*cos(th2));
+    J[1][1] = -(2*(L3*sin(th1) - L3*cos(th2)^2*sin(th1) - L3*cos(th3)^2*sin(th1) + 2*L3*cos(th2)^2*cos(th3)^2*sin(th1) + off2*cos(th1)*cos(th2)*cos(th3) + off1*cos(th2)*cos(th3)*sin(th1) + off2*cos(th1)*sin(th2)*sin(th3) + off1*sin(th1)*sin(th2)*sin(th3) + L2*cos(th2)^2*cos(th3)*sin(th1) + L2*cos(th2)*sin(th1)*sin(th2)*sin(th3) + 2*L3*cos(th2)*cos(th3)*sin(th1)*sin(th2)*sin(th3)))/(2*L2*off1*sin(th3) + 2*L2^2*cos(th2)*sin(th3) + L2*L3*sin(th2) - L2*L3*cos(2*th3)*sin(th2) + L2*L3*sin(2*th3)*cos(th2));
+    J[1][2] = sin(th2 - th3)/(L2*sin(th3));
+    J[2][0] = -(2*(L3^2*cos(th1) + L2^2*cos(th1)*cos(th2)^2 - L3^2*cos(th1)*cos(th2)^2 - L3^2*cos(th1)*cos(th3)^2 + 2*L3^2*cos(th1)*cos(th2)^2*cos(th3)^2 + L2*off1*cos(th1)*cos(th2) - L2*off2*cos(th2)*sin(th1) + L3*off1*cos(th1)*cos(th2)*cos(th3) - L3*off2*cos(th2)*cos(th3)*sin(th1) + L3*off1*cos(th1)*sin(th2)*sin(th3) - L3*off2*sin(th1)*sin(th2)*sin(th3) + 2*L2*L3*cos(th1)*cos(th2)^2*cos(th3) + 2*L3^2*cos(th1)*cos(th2)*cos(th3)*sin(th2)*sin(th3) + 2*L2*L3*cos(th1)*cos(th2)*sin(th2)*sin(th3)))/(L2*L3*(L3*sin(th2) + 2*off1*sin(th3) + 2*L2*cos(th2)*sin(th3) - L3*cos(2*th3)*sin(th2) + L3*sin(2*th3)*cos(th2)));
+    J[2][1] = -(2*(L3^2*sin(th1) + L2^2*cos(th2)^2*sin(th1) - L3^2*cos(th2)^2*sin(th1) - L3^2*cos(th3)^2*sin(th1) + 2*L3^2*cos(th2)^2*cos(th3)^2*sin(th1) + L2*off2*cos(th1)*cos(th2) + L2*off1*cos(th2)*sin(th1) + L3*off2*cos(th1)*cos(th2)*cos(th3) + L3*off1*cos(th2)*cos(th3)*sin(th1) + L3*off2*cos(th1)*sin(th2)*sin(th3) + L3*off1*sin(th1)*sin(th2)*sin(th3) + 2*L2*L3*cos(th2)^2*cos(th3)*sin(th1) + 2*L3^2*cos(th2)*cos(th3)*sin(th1)*sin(th2)*sin(th3) + 2*L2*L3*cos(th2)*sin(th1)*sin(th2)*sin(th3)))/(L2*L3*(L3*sin(th2) + 2*off1*sin(th3) + 2*L2*cos(th2)*sin(th3) - L3*cos(2*th3)*sin(th2) + L3*sin(2*th3)*cos(th2)));
+    J[2][2] = (L2*sin(th2) + L3*sin(th2 - th3))/(L2*L3*sin(th3));
+   */
 }
 
 void ThreeLinks::update(Path *path_des, int i)
@@ -39,9 +54,11 @@ void ThreeLinks::update(Path *path_des, int i)
     th1 = th1 + k_cl*(J[0][0]*err_x + J[0][1]*err_y + J[0][2]*err_z);  // without v
     th2 = th2 + k_cl*(J[1][0]*err_x + J[1][1]*err_y + J[1][2]*err_z);
     th3 = th3 + k_cl*(J[2][0]*err_x + J[2][1]*err_y + J[2][2]*err_z);
-    px = cos(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
-    py = sin(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
-    pz = L1 + L2*sin(th2) + L3*sin(th2 - th3);
+    //px = cos(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
+    //py = sin(th1)*(L2*cos(th2) + L3*cos(th2 - th3));
+    pz = L1 - L2*sin(th2) - L3*sin(th2 - th3);
+    px = off1*cos(th1) - off2*sin(th1) + L2*cos(th1)*cos(th2) + L3*cos(th1)*cos(th2)*cos(th3) + L3*cos(th1)*sin(th2)*sin(th3);
+    py = off2*cos(th1) + off1*sin(th1) + L2*cos(th2)*sin(th1) + L3*cos(th2)*cos(th3)*sin(th1) + L3*sin(th1)*sin(th2)*sin(th3);
     Jacobian();
 }
 /********************************************************/
