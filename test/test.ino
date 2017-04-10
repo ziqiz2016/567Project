@@ -4,6 +4,7 @@
 #define r2d 180/pi  // radius to degree
 #define d2r pi/180
 #define r  3        // radius of circle
+#define p  3
 #define T  200      // t_Step 200ms
 
 
@@ -69,9 +70,11 @@ void work_mode() {
     Serial.println(incomingData);
     switch (incomingData)
     {
-      case 'x': start_point(&mylinks, &x, &y); break;
+      case 's': draw_square(&mylinks, &path, x, y); break;
       case 'c': draw_circle(&mylinks, &path, x, y); break;
-      default : Serial.println("nothing to draw."); break;
+      case 't': draw_tri(&mylinks, &path, x, y); break;
+      case 'x': start_point(&mylinks, &x, &y); break;
+      default : Serial.println("nothing to draw"); break;
     }
     //Serial.print("\r"); //enter
   }
@@ -139,18 +142,83 @@ void output(const ThreeLinks *mylinks)
 }
 
 // initialize path
-void initial_circle(Path *path, float x0, float y0)
+void initial_path(Path *path, float x0, float y0,char shape)
 {
   float z0 = 0;
-  for (int i = 0; i < N; ++i)
-  {
-    path->x[i] = (x0 - r) + r * cos(i * 2 * pi / N);
-    path->y[i] = y0 + r * sin(i * 2 * pi / N);
-    Serial.print(path->x[i], DEC);
-    Serial.print(" ");
-    Serial.println(path->y[i], DEC);
-  }
-  path->z = z0;
+  switch (shape) {
+  case 'c':
+    for (int i = 0; i < N; ++i)
+    {
+      path->x[i] = (x0 - r) + r * cos(i * 2 * pi / N);
+      path->y[i] = y0 + r * sin(i * 2 * pi / N);
+    }
+    path->z = z0;
+  break;
+  case 't':
+    for (int i = 0; i < N; ++i)
+    {
+      if(i<30)
+      {
+          path->x[i]=x0+p*(i-0)/30;
+          path->y[i]=-path->x[i]+x0+y0;
+      }
+      else if(i<70)
+      {
+          path->x[i]=x0+p-2*p*(i-30)/40;
+          path->y[i]=y0-p;
+      }
+      else
+      {
+          path->x[i]=x0-p+p*(i-70)/30;
+          path->y[i]=path->x[i]-x0+y0;
+      }
+    }
+    path->z = z0;
+  break;
+  case 's':
+    for (int i = 0; i < N; ++i)
+    {
+      if(i<25)
+      {
+          path->x[i]=x0-p*(i-0)/25;
+          path->y[i]=y0;
+      }
+      else if(i<50)
+      {
+          path->x[i]=x0-p;
+          path->y[i]=y0-p*(i-25)/25;
+      }
+      else if(i<75)
+      {
+          path->x[i]=x0-p+p*(i-50)/25;
+          path->y[i]=y0-p;
+      }
+      else
+      {
+          path->x[i]=x0;
+          path->y[i]=y0-p+p*(i-75)/25;
+      }
+    }
+    path->z = z0;
+  break;
+  case 'p':    // point
+    for (int i = 0; i < N; ++i)
+    {
+      path->x[i] = x0;
+      path->y[i] = y0;
+    }
+    path->z = z0;
+  break;
+}
+  // for (int i = 0; i < N; ++i)
+  // {
+  //   path->x[i] = (x0 - r) + r * cos(i * 2 * pi / N);
+  //   path->y[i] = y0 + r * sin(i * 2 * pi / N);
+  //   Serial.print(path->x[i], DEC);
+  //   Serial.print(" ");
+  //   Serial.println(path->y[i], DEC);
+  // }
+  // path->z = z0;
   Serial.println("circle initial completed.");
 }
 
@@ -168,9 +236,9 @@ void start_point(ThreeLinks *mylinks, float *x, float *y)
   Serial.println(*y, DEC);
   point.x[0] = *x;
   point.y[0] = *y;
-  point.z = 0;         // cal_point coordinate
+  point.z = 0.5;         // cal_point coordinate
   //Serial.println("Calibration......");
-  for (int i = 0; i < 6; ++i)
+  for (int i = 0; i < 20; ++i)
   {
     output(mylinks);
     mylinks->update(&point, 0);
@@ -180,13 +248,13 @@ void start_point(ThreeLinks *mylinks, float *x, float *y)
     //output(mylinks);
     delay(T); // delay some time
   }
-  //Serial.println("Finished Calibration......");
+  Serial.println("Finished Calibration......");
 }
 
 // draw circle
 void draw_circle(ThreeLinks *mylinks, Path *circle, float x, float y)
 {
-  initial_circle(circle, x, y);
+  initial_path(circle, x, y,'c');
   Serial.println("I'm drawing a circle......");
   for (int i = 0; i < N; ++i)
   {
@@ -197,4 +265,32 @@ void draw_circle(ThreeLinks *mylinks, Path *circle, float x, float y)
   mylinks->update(circle, 0);
   output(mylinks);
   Serial.println("circle draw completed.");
+}
+void draw_square(ThreeLinks *mylinks, Path *square, float x, float y)
+{
+  initial_path(square, x, y,'s');
+  Serial.println("I'm drawing a square......");
+  for (int i = 0; i < N; ++i)
+  {
+    mylinks->update(square, i);
+    output(mylinks);
+    delay(T); // delay some time
+  }
+  mylinks->update(square, 0);
+  output(mylinks);
+  Serial.println("square draw completed.");
+}
+void draw_tri(ThreeLinks *mylinks, Path *triangle, float x, float y)
+{
+  initial_path(triangle, x, y,'t');
+  Serial.println("I'm drawing a triangle......");
+  for (int i = 0; i < N; ++i)
+  {
+    mylinks->update(triangle, i);
+    output(mylinks);
+    delay(T); // delay some time
+  }
+  mylinks->update(triangle, 0);
+  output(mylinks);
+  Serial.println("triangle draw completed.");
 }
