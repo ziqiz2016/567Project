@@ -1,9 +1,9 @@
-#define L1 4.3
+#define L1 3.9//4.3
 #define L2 9.4
-#define L3 10.4
+#define L3 10.5
 #define off1 2.8
-#define off2 -3.8
-#define k_cl 30*0.01
+#define off2 -3.7
+#define k_cl 40*0.01
 #define N 100
 
 class Path

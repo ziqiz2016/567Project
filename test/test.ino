@@ -4,7 +4,7 @@
 #define r2d 180/pi  // radius to degree
 #define d2r pi/180
 #define r  3        // radius of circle
-#define p  3
+#define p  6
 #define T  200      // t_Step 200ms
 
 
@@ -22,9 +22,9 @@ void setup() {
   servo1.attach(9);       // #9 for q1
   servo2.attach(10);      // #10 for q2
   servo3.attach(11);      // #11 for q3
-  q1 = 38;
-  q2 = 55;
-  q3 = 66;
+  q1 = 35;
+  q2 = 52-3;
+  q3 = 84;
   th1 = 0;
   th2 = -pi / 2;
   th3 = -pi / 2;
@@ -32,13 +32,9 @@ void setup() {
   servo1.write(q1);
   servo2.write(q2);
   servo3.write(q3);
-  Serial.println("***************Drawing Robot******************");
-  Serial.println("  Press the following key to draw a shape.");
-  Serial.println("  x: setting start point                  ");
-  Serial.println("  c: circle                               ");
-  Serial.println("  t: triangle                             ");
-  Serial.println("  s: square                               ");
-  Serial.println("**********************************************");
+  Serial.println("***********************Drawing Robot***********************");
+  Serial.println("Please press x to set a start point on the drawing sheet.");
+  Serial.println("***********************************************************");
   //servo1.write(0);
 }
 
@@ -132,13 +128,13 @@ void output(const ThreeLinks *mylinks)
   servo2.write(round(r2d * (mylinks->th2)) + q2 + 90);
   servo3.write(round(r2d * (mylinks->th3)) + q3 + 90);
   //Serial.print(mylinks->px, DEC);
-  Serial.print(round(r2d * (mylinks->th1)), DEC);
-  Serial.print(' ');
+  //Serial.print(round(r2d * (mylinks->th1)), DEC);
+  //Serial.print(' ');
   //Serial.print(mylinks->py, DEC);
-  Serial.print(round(r2d * (mylinks->th2)), DEC);
-  Serial.print(' ');
+  //Serial.print(round(r2d * (mylinks->th2)), DEC);
+  //Serial.print(' ');
   //Serial.println(mylinks->pz, DEC);
-  Serial.println(round(r2d * (mylinks->th3)), DEC);
+  //Serial.println(round(r2d * (mylinks->th3)), DEC);
 }
 
 // initialize path
@@ -219,7 +215,7 @@ void initial_path(Path *path, float x0, float y0,char shape)
   //   Serial.println(path->y[i], DEC);
   // }
   // path->z = z0;
-  Serial.println("circle initial completed.");
+  Serial.println("path initial completed.");
 }
 
 // set start point
@@ -236,7 +232,7 @@ void start_point(ThreeLinks *mylinks, float *x, float *y)
   Serial.println(*y, DEC);
   point.x[0] = *x;
   point.y[0] = *y;
-  point.z = 0.5;         // cal_point coordinate
+  point.z = 0.1;         // cal_point coordinate
   //Serial.println("Calibration......");
   for (int i = 0; i < 20; ++i)
   {
@@ -249,6 +245,13 @@ void start_point(ThreeLinks *mylinks, float *x, float *y)
     delay(T); // delay some time
   }
   Serial.println("Finished Calibration......");
+  Serial.println("***************Drawing Robot******************");
+  Serial.println("  Press the following key to draw a shape.");
+  Serial.println("  x: setting another start point          ");
+  Serial.println("  c: circle                               ");
+  Serial.println("  t: triangle                             ");
+  Serial.println("  s: square                               ");
+  Serial.println("**********************************************");
 }
 
 // draw circle
@@ -262,9 +265,19 @@ void draw_circle(ThreeLinks *mylinks, Path *circle, float x, float y)
     output(mylinks);
     delay(T); // delay some time
   }
-  mylinks->update(circle, 0);
-  output(mylinks);
+  for (int j=0;j<10;++j)
+  {
+    mylinks->update(circle, 0);
+    output(mylinks);
+  }
   Serial.println("circle draw completed.");
+  Serial.println("***************Drawing Robot******************");
+  Serial.println("  Press the following key to draw a shape.");
+  Serial.println("  x: setting another start point          ");
+  Serial.println("  c: circle                               ");
+  Serial.println("  t: triangle                             ");
+  Serial.println("  s: square                               ");
+  Serial.println("**********************************************");
 }
 void draw_square(ThreeLinks *mylinks, Path *square, float x, float y)
 {
@@ -276,9 +289,19 @@ void draw_square(ThreeLinks *mylinks, Path *square, float x, float y)
     output(mylinks);
     delay(T); // delay some time
   }
-  mylinks->update(square, 0);
-  output(mylinks);
+  for (int j=0;j<10;++j)
+  {
+    mylinks->update(square, 0);
+    output(mylinks);
+  }
   Serial.println("square draw completed.");
+  Serial.println("***************Drawing Robot******************");
+  Serial.println("  Press the following key to draw a shape.");
+  Serial.println("  x: setting another start point          ");
+  Serial.println("  c: circle                               ");
+  Serial.println("  t: triangle                             ");
+  Serial.println("  s: square                               ");
+  Serial.println("**********************************************");
 }
 void draw_tri(ThreeLinks *mylinks, Path *triangle, float x, float y)
 {
@@ -290,7 +313,17 @@ void draw_tri(ThreeLinks *mylinks, Path *triangle, float x, float y)
     output(mylinks);
     delay(T); // delay some time
   }
-  mylinks->update(triangle, 0);
-  output(mylinks);
+  for (int j=0;j<10;++j)
+  {
+    mylinks->update(triangle, 0);
+    output(mylinks);
+  }
   Serial.println("triangle draw completed.");
+  Serial.println("***************Drawing Robot******************");
+  Serial.println("  Press the following key to draw a shape.");
+  Serial.println("  x: setting another start point          ");
+  Serial.println("  c: circle                               ");
+  Serial.println("  t: triangle                             ");
+  Serial.println("  s: square                               ");
+  Serial.println("**********************************************");
 }
